@@ -1,12 +1,12 @@
 {
-    "name": "ohtarr/ciscoparse",
+    "name": "ohtarr/parser",
     "type": "library",
-    "description": "PHP7 library to parse cisco cli to php object",
+    "description": "PHP7 library to parse device cli to php object",
     "keywords": [
         "php7",
         "cisco"
         ],
-    "homepage": "http://github.com/ohtarr/ciscoparse",
+    "homepage": "http://github.com/ohtarr/parser",
     "authors": [
         {
             "name": "ohtarr",
