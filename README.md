@@ -1,13 +1,13 @@
-# ciscoparse
-Cisco Configuration Parser
+# Parser
+Parsing Library to parse text output from CLI sessions.
 
-Cisco configuration parser designed to be simple to use.  Simply feed it specific show commands and it will parse and output usable results.
+Parser designed to be simple to use.  Simply feed it specific show commands and it will parse and output usable results.
 
 The "input_data" method takes raw SHOW commands from cisco devices and stores them in the INPUT property.  The "update" method triggers any and all parsing and stores
 results in the "output" property for use.
 
 example use:
-$cp = new \ohtarr\CiscoParse();
+$cp = new \ohtarr\Parser();
 $cp->input_data($SHRUN,"run");
 $cp->input_data($SHINT,"interfaces");
 $cp->input_data($SHVER,"version");

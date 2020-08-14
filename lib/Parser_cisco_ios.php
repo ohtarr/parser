@@ -43,6 +43,7 @@ class Parser_cisco_ios extends Parser_cisco
 		{
 			$this->output['system']['hostname'] = $this->parse_run_to_hostname($this->input['run']);
 			$this->output['system']['usernames'] = $this->parse_run_to_usernames($this->input['run']);
+			$this->output['system']['enable_secret'] = $this->parse_run_to_enable_secret($this->input['run']);
 			$this->output['system']['domain'] = $this->parse_run_to_domain($this->input['run']);
 			$this->output['system']['nameservers'] = $this->parse_run_to_name_servers($this->input['run']);
 			$this->output['ips'] = $this->parse_run_to_ips($this->input['run']);
@@ -132,6 +133,17 @@ class Parser_cisco_ios extends Parser_cisco
 		}
 		//print_r($usernames);
 		return $usernames;
+	}
+
+	public static function parse_run_to_enable_secret($run)
+	{
+		$reg1 = "/enable secret \d (\S+)/";
+
+		if(preg_match_all($reg1, $run, $HITS))
+		{
+			//print_r($HITS);
+			return $HITS[1][0];
+		}
 	}
 
 	public static function parse_run_to_hostname($run)
@@ -241,6 +253,48 @@ class Parser_cisco_ios extends Parser_cisco
 		return $ntp;
 	}
 	
+	public static function parse_run_to_tacacs($run)
+	{
+		$LINES = explode("\n", $run); 
+		$INT = null;
+		$INTCFG = "";
+		foreach($LINES as $LINE)
+		{
+			if ($LINE == "")
+			{
+				continue;
+			}
+			$DEPTH  = strlen($LINE) - strlen(ltrim($LINE));
+
+			if($DEPTH == 0)
+			{
+				if($INT)
+				{
+					$tmparray[] = $INTCFG;
+					//$INTARRAY[$INT] = self::parse_interface_config($INT,$INTCFG);
+					$INTCFG = "";
+				}
+				if (preg_match("/^aaa group server tacacs\+ (\S+)/", $LINE, $HITS))
+				{
+					$INT = strtolower($HITS[1]);
+					$INTCFG .= $LINE . "\n";
+				} else {
+					$INT = null;
+				}
+				continue;
+			}
+			if($DEPTH > 0)
+			{
+				if($INT)
+				{
+					$INTCFG .= $LINE . "\n";
+				}
+			}
+		}
+		//return $INTARRAY;
+		return $tmparray;
+	}
+
 	public static function parse_run_to_policymap($run)
 	{
 
