@@ -37,6 +37,7 @@ class Parser
 		'system' 		=>	[],
 		'ips'			=>	[],
 		'interfaces'	=>	[],
+		'macs'			=>  [],
 	];
 
 	public function __construct($array)
@@ -67,62 +68,5 @@ class Parser
 			$this->update();
 		}
 	}
-
-	public static function netmask2cidr($netmask)
-	{
-		$bits = 0;
-		$netmask = explode(".", $netmask);
-
-		foreach($netmask as $octect)
-			$bits += strlen(str_replace("0", "", decbin($octect)));
-		return $bits;
-	}
-
-	public static function cidr2network($ip, $cidr)
-	{
-		$network = long2ip((ip2long($ip)) & ((-1 << (32 - (int)$cidr))));
-		return $network;
-	}
-
-	public static function cidr2netmask($int) {
-		return long2ip(-1 << (32 - (int)$int));
-	}
-	
-	public static function macToRaw($mac)
-	{
-		$mac = str_replace(":", "", $mac);
-		$mac = str_replace("-", "", $mac);
-		$mac = str_replace(".", "", $mac);
-		$mac = trim($mac);
-		return strtoupper($mac);
-	}
-
-	public static function macToHyphen($mac)
-	{
-		$raw = self::macToRaw($mac);
-		$trim = trim($raw);
-		$split = str_split($trim, 2);
-		$implode =  implode("-", $split);
-		return strtoupper($implode);
-	}
-
-	public static function macToColon($mac)
-	{
-		$raw = self::macToRaw($mac);
-		$trim = trim($raw);
-		$split = str_split($trim, 2);
-		$implode =  implode(":", $split);
-		return strtoupper($implode);
-	}
-
-	public static function macToPeriod($mac)
-	{
-		$raw = self::macToRaw($mac);
-		$trim = trim($raw);
-		$split = str_split($trim, 4);
-		$implode =  implode(".", $split);
-		return strtoupper($implode);
-	}
-
 
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * lib/Parser_cisco.php.
+ * lib/Cisco/IOS/Utility.php.
  *
  *
  *
@@ -26,28 +26,9 @@
  * @license   http://www.gnu.org/copyleft/lesser.html The GNU LESSER GENERAL PUBLIC LICENSE, Version 3.0
  */
 
-namespace ohtarr;
+namespace ohtarr\Cisco\IOS;
 
-require_once "Parser.php";
-
-class Parser_cisco extends Parser
+class Utility extends \ohtarr\Cisco\Utility
 {
 
-	public $input = [
-		"run" 			=>	"",
-		"version" 		=>	"",
-		"inventory"		=>	"",
-		"cdp"			=>	"",
-		"lldp"			=>	"",
-		"interfaces"	=>	"",
-		"stp"			=>	"",
-		"switchport"	=>	"",
-	];
-	//public $interfaces = [];
-	public $output = [
-		'system' 		=>	[],
-		'ips'			=>	[],
-		'interfaces'	=>	[],
-	];
-	
 }

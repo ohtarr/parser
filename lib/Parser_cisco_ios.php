@@ -28,17 +28,18 @@
 
 namespace ohtarr;
 
-require_once "Parser_cisco.php";
+use ohtarr\Parser_cisco;
 
 class Parser_cisco_ios extends Parser_cisco
 {
 	public function update()
 	{
-		$this->output = [
+		/* $this->output = [
 			'system' 		=>	[],
 			'ips'			=>	[],
 			'interfaces'	=>	[],
-		];
+			'macs'			=>  [],
+		]; */
 		if($this->input['run'])
 		{
 			$this->output['system']['hostname'] = $this->parse_run_to_hostname($this->input['run']);
@@ -103,39 +104,47 @@ class Parser_cisco_ios extends Parser_cisco
 		{
 			
 		}
+
+		if($this->input['mac'])
+		{
+			$this->output['macs'] = $this->parse_mac_to_macs($this->input['mac']);
+			$this->addMacsToInterfaces($this->input['mac']);
+			//$this->output['interfaces'] = array_replace_recursive($this->output['interfaces'],$this->parse_mac_to_interface_macs($this->input['mac']));
+		}
+
 		$this->merge_neighbors();
 	}
 
-	public static function parse_run_to_usernames($run)
-	{
-		$reg1 = "/^username (\S+).*/m";
-		$reg2 = "/privilege (\d+)/m";
-		$reg3 = "/secret (\d+) (\S+)/m";
+	// public static function parse_run_to_usernames($run)
+	// {
+	// 	$reg1 = "/^username (\S+).*/m";
+	// 	$reg2 = "/privilege (\d+)/m";
+	// 	$reg3 = "/secret (\d+) (\S+)/m";
 
-		//find all usernames lines
-		if(preg_match_all($reg1, $run, $HITS))
-		{
-			//print_r($HITS);
-			foreach($HITS[1] as $HKEY => $HIT)
-			{
-				//find privilege level of each
-				if(preg_match_all($reg2, $HITS[0][$HKEY], $HITS2))
-				{
-					$usernames[$HITS[1][$HKEY]]['privilege'] = $HITS2[1][0];
-				}
-				if(preg_match_all($reg3, $HITS[0][$HKEY], $HITS3))
-				{
-					//print_r($HITS3);
-					$usernames[$HITS[1][$HKEY]]['encryption'] = $HITS3[1][0];
-					$usernames[$HITS[1][$HKEY]]['secret'] = $HITS3[2][0];					
-				}
-			}
-		}
-		//print_r($usernames);
-		return $usernames;
-	}
+	// 	//find all usernames lines
+	// 	if(preg_match_all($reg1, $run, $HITS))
+	// 	{
+	// 		//print_r($HITS);
+	// 		foreach($HITS[1] as $HKEY => $HIT)
+	// 		{
+	// 			//find privilege level of each
+	// 			if(preg_match_all($reg2, $HITS[0][$HKEY], $HITS2))
+	// 			{
+	// 				$usernames[$HITS[1][$HKEY]]['privilege'] = $HITS2[1][0];
+	// 			}
+	// 			if(preg_match_all($reg3, $HITS[0][$HKEY], $HITS3))
+	// 			{
+	// 				//print_r($HITS3);
+	// 				$usernames[$HITS[1][$HKEY]]['encryption'] = $HITS3[1][0];
+	// 				$usernames[$HITS[1][$HKEY]]['secret'] = $HITS3[2][0];					
+	// 			}
+	// 		}
+	// 	}
+	// 	//print_r($usernames);
+	// 	return $usernames;
+	// }
 
-	public static function parse_run_to_enable_secret($run)
+	/* public static function parse_run_to_enable_secret($run)
 	{
 		$reg1 = "/enable secret \d (\S+)/";
 
@@ -156,9 +165,9 @@ class Parser_cisco_ios extends Parser_cisco
 			//print_r($HITS);
 			return $HITS[1][0];
 		}
-	}
+	} */
 
-	public static function parse_run_to_domain($run)
+/* 	public static function parse_run_to_domain($run)
 	{
 		$reg1 = "/^ip domain-name (\S+)/m";
 		$reg2 = "/^ip domain name (\S+)/m";
@@ -221,9 +230,9 @@ class Parser_cisco_ios extends Parser_cisco
 			}
 		}
 		return $return;
-	}
+	} */
 	
-	public static function parse_run_to_ntp($run)
+/* 	public static function parse_run_to_ntp($run)
 	{
 		$reg = "/ntp server (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/";
 		$reg2 = "/ntp server vrf (\S+) (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/";
@@ -298,9 +307,9 @@ class Parser_cisco_ios extends Parser_cisco
 	public static function parse_run_to_policymap($run)
 	{
 
-	}
+	} */
 
-	public static function parse_version_to_uptime($version)
+/* 	public static function parse_version_to_uptime($version)
 	{
 		$reg1 = "/uptime is (.+)/m";
 		$reg2 = "/(\d+) year/m";
@@ -334,44 +343,44 @@ class Parser_cisco_ios extends Parser_cisco
 		}
 
 		return $uptime;
-	}
+	} */
 
-	public static function parse_version_to_model($version)
-	{
-			if (preg_match('/.*isco\s+(WS-\S+)\s.*/', $version, $reg))
-			{
-			$model = $reg[1];
+	// public static function parse_version_to_model($version)
+	// {
+	// 		if (preg_match('/.*isco\s+(WS-\S+)\s.*/', $version, $reg))
+	// 		{
+	// 		$model = $reg[1];
 
-			return $model;
-		}
-		if (preg_match('/.*isco\s+(OS-\S+)\s.*/', $version, $reg))
-		{
-			$model = $reg[1];
+	// 		return $model;
+	// 	}
+	// 	if (preg_match('/.*isco\s+(OS-\S+)\s.*/', $version, $reg))
+	// 	{
+	// 		$model = $reg[1];
 
-			return $model;
-		}
-		if (preg_match('/.*ardware:\s+(\S+),.*/', $version, $reg))
-		{
-			$model = $reg[1];
+	// 		return $model;
+	// 	}
+	// 	if (preg_match('/.*ardware:\s+(\S+),.*/', $version, $reg))
+	// 	{
+	// 		$model = $reg[1];
 
-			return $model;
-		}
-		if (preg_match('/.*ardware:\s+(\S+).*/', $version, $reg))
-		{
-			$model = $reg[1];
+	// 		return $model;
+	// 	}
+	// 	if (preg_match('/.*ardware:\s+(\S+).*/', $version, $reg))
+	// 	{
+	// 		$model = $reg[1];
 
-			return $model;
-		}
-		if (preg_match('/^[c,C]isco\s(\S+)\s\(.*/m', $version, $reg))
-		{
-			$model = $reg[1];
+	// 		return $model;
+	// 	}
+	// 	if (preg_match('/^[c,C]isco\s(\S+)\s\(.*/m', $version, $reg))
+	// 	{
+	// 		$model = $reg[1];
 
-			return $model;
-		}
-	}
+	// 		return $model;
+	// 	}
+	// }
 	
 	
-	public static function parse_version_to_ios($version)
+/* 	public static function parse_version_to_ios($version)
 	{
 		$os = null;
 		$reg1 = "/Cisco (IOS) Software/m";
@@ -396,8 +405,8 @@ class Parser_cisco_ios extends Parser_cisco
 		}		
 		return $os;
 	}
-	
-	public static function parse_version_to_license($version)
+	 */
+/* 	public static function parse_version_to_license($version)
 	{
 		$license = null;
 		$reg1 = "/License Level: (\S+)/";
@@ -435,9 +444,9 @@ class Parser_cisco_ios extends Parser_cisco
 			}
 		}
 		return $license;		
-	}
+	} */
 
-	public static function parse_version_to_confreg($version)
+/* 	public static function parse_version_to_confreg($version)
 	{
 		$reg = "/Configuration register is (\S+)/";
 		if (preg_match($reg, $version, $HITS1))
@@ -476,9 +485,9 @@ class Parser_cisco_ios extends Parser_cisco
 			$serial = $HITS1[1];
 		}
 		return $serial;
-	}
+	} */
 
-	public static function parse_version_to_mac($version)
+/* 	public static function parse_version_to_mac($version)
 	{
 		$reg1 = "/Base ethernet MAC Address\s+:\s+(\S\S:\S\S:\S\S:\S\S:\S\S:\S\S)/";
 		if (preg_match($reg1, $version, $HITS1))
@@ -528,9 +537,9 @@ class Parser_cisco_ios extends Parser_cisco
 			}
 		}
 		return $tmp;
-	}
+	} */
 
-	public static function parse_run_to_ips($run)
+/* 	public static function parse_run_to_ips($run)
 	{
 		$reg1 = "/ip address (\d+.\d+.\d+.\d+) (\d+.\d+.\d+.\d+)/";
 		
@@ -544,7 +553,7 @@ class Parser_cisco_ios extends Parser_cisco
 			}
 		}
 		return $ips;
-	}
+	} */
 
 /*
 	function parse_run_to_subnets()
@@ -565,12 +574,13 @@ class Parser_cisco_ios extends Parser_cisco
 	}
 /**/
 
-	public static function parse_interface_config($INTCFG)
+/* 	public static function parse_interface_config($INTCFG)
 	{
 		if(preg_match("/interface (\S+)/", $INTCFG, $HITS1))
 		{
-			$INTNAME = $HITS1[1];
-			$INTARRAY['name']= $HITS1[1];
+			$INTNAME = self::name_abbreviate($HITS1[1]);
+			//$INTNAME = $HITS1[1];
+			$INTARRAY['name']= $INTNAME;
 		}
 //		$INTLINES = explode("\n",$INTCFG);
 //		foreach($INTLINES as $INTLINE)
@@ -687,9 +697,9 @@ class Parser_cisco_ios extends Parser_cisco
 			}
 	//	}
 		return $INTARRAY;
-	}
+	} */
 
-	public static function parse_run_to_raw_interfaces($run)
+/* 	public static function parse_run_to_raw_interfaces($run)
 	{
 		$LINES = explode("\n", $run); 
 		$INT = null;
@@ -729,22 +739,23 @@ class Parser_cisco_ios extends Parser_cisco
 		}
 		//return $INTARRAY;
 		return $tmparray;
-	}
+	} */
 	
-	public static function parse_run_to_interfaces($run)
+/* 	public static function parse_run_to_interfaces($run)
 	{
 		$interfaces = self::parse_run_to_raw_interfaces($run);
 		foreach($interfaces as $interface)
 		{
 			$tmp = self::parse_interface_config($interface);
-			$intname = strtolower($tmp['name']);
-			$array[$intname] = $tmp;
-			$array[$intname]['raw']= $interface;
+			//$intname = self::name_unabbreviate($tmp['name']);
+			//$intname = strtolower($tmp['name']);
+			$array[$tmp['name']] = $tmp;
+			$array[$tmp['name']]['raw']= $interface;
 		}
 		return $array;
-	}
+	} */
 
-	public static function parse_run_to_mgmt_interface($run)
+/* 	public static function parse_run_to_mgmt_interface($run)
 	{
 		$regs = [
 			'/.*source.* (\S+)/',
@@ -784,9 +795,9 @@ class Parser_cisco_ios extends Parser_cisco
 			}
 		}		
 		return $return;
-	}
+	} */
 
-	public static function parse_inventory($inventory)
+/* 	public static function parse_inventory($inventory)
 	{
 		$reg = '/NAME:\s*(\S.*\S),\s*DESCR:\s*(.*)\nPID:\s*(\S.*\S)\s*,\s*VID:\s*(\S.*\S)\s*,\s*SN:\s*(\S.*\S)/';
 		if (preg_match_all($reg, $inventory, $HITS, PREG_SET_ORDER))
@@ -818,11 +829,11 @@ class Parser_cisco_ios extends Parser_cisco
 			}
 			return $sn;
 		}
-	}
+	} */
 
-	public static function name_unabbreviate($name)
+/* 	public static function get_interface_name_conversions()
 	{
-		$shortcuts = [
+		return [
 			"fa" 	=>	"fastethernet",
 			"gi" 	=>	"gigabitethernet",
 			"te" 	=>	"tengigabitethernet",
@@ -830,61 +841,74 @@ class Parser_cisco_ios extends Parser_cisco
 			"mu" 	=>	"multilink",
 			"ge"	=>	"gigabitethernet",
 			"fe"	=>	"fastethernet",
+			"eth"	=>	"ethernet",
+			"fo"	=>	"fortygigabitethernet",
 		];
 
-		$name = strtolower($name);
-		//print $name . "\n";
-		foreach($shortcuts as $abbrev => $full)
+	}
+
+	public static function parse_interface_name($name)
+	{
+		$conversions = self::get_interface_name_conversions();
+		$return['raw'] = $name;
+		$return['rawlower'] = strtolower($name);
+		$return['rawupper'] = strtoupper($name);
+		foreach($conversions as $abbrev => $full)
 		{
-			$namereg = "/(" . $abbrev . ")(\d\S+|\d)/";
-			//print $namereg . "\n";
-			if(preg_match($namereg, $name, $hits))
+			$regs = [
+				'long'	=>	"/^" . $full . "(.*)/",
+				'short'	=>	"/^" . $abbrev . "(.*)/",
+			];
+			foreach($regs as $key => $reg)
 			{
-				//print_r($hits);
-				$newname = $full . $hits[2];
-				//print $newname . "\n";
-				return $newname;
+				//print "key: {$key} Reg: {$reg}\n";
+				if(preg_match($reg, $return['rawlower'], $hits))
+				{
+					//print "Match found using Key: {$key} and Reg: {$reg}! \n";
+					foreach($conversions as $short => $long)
+					{
+						//print "short: {$short} long: {$long}\n";
+						if($long == $full)
+						{
+							$return['short'] = $short . $hits[1];
+							$return['long'] = $long . $hits[1];
+							break;
+						}
+					}
+					break;
+				}
 			}
 		}
-		return $name;
+		return $return;
+	} */
+
+/* 	public static function name_unabbreviate($name)
+	{
+		$parsed = self::parse_interface_name($name);
+		if(isset($parsed['long']))
+		{
+			return $parsed['long'];
+		}
+		return $parsed['rawlower'];
 	}
 	
 	public static function name_abbreviate($name)
 	{
-		$shortcuts = [
-			"fa" 	=>	"fastethernet",
-			"gi" 	=>	"gigabitethernet",
-			"te" 	=>	"tengigabitethernet",
-			"lo" 	=>	"loopback",
-			"mu" 	=>	"multilink",
-			"ge"	=>	"gigabitethernet",
-			"fe"	=>	"fastethernet",
-		];
-
-		$name = strtolower($name);
-		//print $name . "\n";
-		foreach($shortcuts as $abbrev => $full)
+		$parsed = self::parse_interface_name($name);
+		if(isset($parsed['short']))
 		{
-			$namereg = "/(" . $full . ")(\d\S+|\d)/";
-			//print $namereg . "\n";
-			if(preg_match($namereg, $name, $hits))
-			{
-				//print_r($hits);
-				$newname = $abbrev . $hits[2];
-				//print $newname . "\n";
-				return $newname;
-			}
+			return $parsed['short'];
 		}
-		return $name;
-	}
+		return $parsed['rawlower'];
+	} */
 
-	public static function dns_name_converter($name)
+/* 	public static function dns_name_converter($name)
 	{
 		$newname = self::name_abbreviate($name);
 		$newname = str_replace("/","-",$newname);
 		$newname = str_replace(".","-",$newname);
 		return $newname;	
-	}
+	} */
 	
 	public function generate_dns_names()
 	{
@@ -918,7 +942,83 @@ class Parser_cisco_ios extends Parser_cisco
 		return $dnsnames;
 	}
 
-	public static function parse_cdp_to_neighbors($cdp)
+/* 	public static function parse_cdp_to_neighbors($cdp)
+	{
+		$cdplines = explode("\n", $cdp); 
+		//$cdplines = preg_split('/\r\n|\r|\n/', $cdp);
+		//print_r($cdplines);
+
+		$current = [];
+		foreach($cdplines as $line)
+		{
+			if(preg_match('/Device ID:/',$line))
+			{
+				if(empty($current))
+				{
+					$current[] = $line;
+				} else {
+					$neighbors[] = implode("\n",$current);
+					$current = [];
+					$current[] = $line;
+				}
+			} else {
+				//var_dump($current);
+				if(!empty($current))
+				{
+					$current[] = $line;
+				}
+			}
+		}
+
+		$regex = [
+			'name'			=>	'/Device\s+ID:\s*(\S+)/',
+			'ip'			=>	'/Entry address\(es\):\s+IP\s+address:\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/',
+			'model'			=>	'/\s*Platform:\s+(.+),\s+Capabilities:/',
+			'localint'		=>	'/Interface:\s*(\S+),\s*Port ID\s*\(outgoing port\):\s*.+/',
+			'remoteint'		=>	'/Interface:\s*\S+,\s*Port ID\s*\(outgoing port\):\s*(.+)/',
+			'version'		=>	'/Version\s*:\s*\n(.*)advertisement\s+version:/s',
+			'nativevlan'	=>	'/Native\s+VLAN:\s*(\d+)/',
+			'duplex'		=>	'/Duplex:\s*(\S+)/',
+		];
+
+		$final = [];
+
+		foreach($neighbors as $cdp)
+		{
+			//print_r($cdp);
+			$tmp = [];
+			foreach($regex as $key => $reg)
+			{
+				if(preg_match($reg,$cdp,$hits))
+				{
+					$tmp[$key] = $hits[1];
+				}
+			}
+			$namearray = explode(".",$tmp['name']);
+			$tmp['name'] = strtoupper($namearray[0]);
+			if(preg_match("/(.*)\(.*\)/",$tmp['name'],$hits2))
+			{
+				$tmp['name'] = $hits2[1];
+			}
+			$tmp['localint'] = self::name_unabbreviate($tmp['localint']);
+			$tmp['remoteint'] = self::name_unabbreviate($tmp['remoteint']);
+			$tmp['version'] = trim($tmp['version']);
+			$final[] = $tmp;
+		}
+		return $final;
+	} */
+
+	public function addNeighborsToInterfaces($shmac)
+	{
+		$intmacs = self::parse_mac_to_interface_macs($shmac);
+
+		foreach($intmacs as $int => $macs)
+		{
+			$this->output['interfaces'][$int]['macs'] = $macs;
+		}
+	}
+
+/* 	public static function parse_cdp_to_neighborsOLD($cdp)
 	{
 		$neighbors = null;
 		$cdpreg = "/Device ID:.*Management address\(es\):/sU";
@@ -972,9 +1072,9 @@ class Parser_cisco_ios extends Parser_cisco
 			}
 		}
 		return $neighbors;
-	}
+	} */
 	
-	public static function parse_lldp_to_neighbors($lldp)
+/* 	public static function parse_lldp_to_neighbors($lldp)
 	{
 		//$lldpreg = "/Chassis id:.*Management Addresses:\s+IP:\s+\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s/sU";
 		$lldpreg = "/Local Intf:.*?Vlan ID:.*?\n/s";
@@ -1031,7 +1131,7 @@ class Parser_cisco_ios extends Parser_cisco
 		{
 			return $neighbors;
 		}
-	}
+	} */
 	
 	public function merge_neighbors()
 	{
@@ -1039,6 +1139,7 @@ class Parser_cisco_ios extends Parser_cisco
 		{
 			foreach($this->output['neighbors']['lldp'] as $lldpneighbor)
 			{
+				$this->output['neighbors']['all'][$lldpneighbor['name']]['name'] = $lldpneighbor['name'];				
 				$this->output['neighbors']['all'][$lldpneighbor['name']]['chassisid'] = $lldpneighbor['chassisid'];
 				$this->output['neighbors']['all'][$lldpneighbor['name']]['localint'] = $lldpneighbor['localint'];
 				$this->output['neighbors']['all'][$lldpneighbor['name']]['remoteint'] = $lldpneighbor['portid'];
@@ -1051,6 +1152,7 @@ class Parser_cisco_ios extends Parser_cisco
 		{
 			foreach($this->output['neighbors']['cdp'] as $cdpneighbor)
 			{
+				$this->output['neighbors']['all'][$cdpneighbor['name']]['name'] = $cdpneighbor['name'];				
 				$this->output['neighbors']['all'][$cdpneighbor['name']]['model'] = $cdpneighbor['model'];
 				$this->output['neighbors']['all'][$cdpneighbor['name']]['localint'] = $cdpneighbor['localint'];
 				$this->output['neighbors']['all'][$cdpneighbor['name']]['remoteint'] = $cdpneighbor['remoteint'];
@@ -1065,7 +1167,7 @@ class Parser_cisco_ios extends Parser_cisco
 		}
 	}
 	
-	function parse_switchport_to_interfaces()
+/* 	function parse_switchport_to_interfaces()
 	{
 		$array=[];
 		$LINES = explode("\n", $this->input['switchport']); 
@@ -1148,9 +1250,9 @@ class Parser_cisco_ios extends Parser_cisco
 		{
 			return $newarray;
 		}
-	}
+	} */
 
-	public static function parse_interfaces_to_raw_interfaces($interfaces)
+/* 	public static function parse_interfaces_to_raw_interfaces($interfaces)
 	{
 		$LINES = explode("\n", $interfaces); 
 		$INT = null;
@@ -1190,9 +1292,9 @@ class Parser_cisco_ios extends Parser_cisco
 		}
 		//return $INTARRAY;
 		return $tmparray;
-	}
+	} */
 
-	public static function parse_interfaces_to_interfaces($interfaces)
+/* 	public static function parse_interfaces_to_interfaces($interfaces)
 	{
 		$interfaces = self::parse_interfaces_to_raw_interfaces($interfaces);
 		foreach($interfaces as $interface)
@@ -1203,9 +1305,9 @@ class Parser_cisco_ios extends Parser_cisco
 			$array[$intname]['raw_interface']= $interface;
 		}
 		return $array;
-	}
+	} */
 
-	public static function parse_interface($interface)
+/* 	public static function parse_interface($interface)
 	{
 		if(preg_match("/(\S+) is (.+),\s+line protocol is (\S+)/", $interface, $HITS1))
 		{
@@ -1413,9 +1515,9 @@ class Parser_cisco_ios extends Parser_cisco
 		}
 
 		return $INTARRAY;
-	}
+	} */
 	
-	public static function parse_interfaces_to_ips($interfaces)
+/* 	public static function parse_interfaces_to_ips($interfaces)
 	{
 		$reg1 = "/Internet address is (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\/(\d{1,2})/";
 
@@ -1429,9 +1531,9 @@ class Parser_cisco_ios extends Parser_cisco
 			}
 		}
 		return $ips;
-	}
+	} */
 
-	public static function parse_run_to_boot($run)
+/* 	public static function parse_run_to_boot($run)
 	{
 		$boots = null;
 		$reg1 = "/boot system switch (\S+) (\S+):(\S+\.bin|\S+\.conf)$/m";
@@ -1466,6 +1568,42 @@ class Parser_cisco_ios extends Parser_cisco
 		}
 
 		return $boots;
+	} */
+
+	/* public static function parse_mac_to_macs($shmac)
+	{
+		$reg = "/\s*(\S*)\s*(\S{1,4}\.\S{1,4}\.\S{1,4})\s*(\S*)\s*(\S*)/";
+		preg_match_all($reg,$shmac,$hits,PREG_SET_ORDER);
+		foreach($hits as $hit)
+		{
+			unset($tmp);
+			//$tmp['vlan'] = $hit[1];		
+			$tmp['mac'] = self::macToRaw($hit[2]);
+			$tmp['type'] = $hit[3];
+			$tmp['port'] = self::name_abbreviate($hit[4]);
+			$macs[$hit[2]] = $tmp;
+		}
+		return $macs;
+	} */
+
+	/* public static function parse_mac_to_interface_macs($shmac)
+	{
+		$macs = self::parse_mac_to_macs($shmac);
+		foreach($macs as $mac)
+		{
+			$array[$mac['port']][] = $mac['mac'];
+		}
+		return $array;
+	} */
+
+	public function addMacsToInterfaces($shmac)
+	{
+		$intmacs = self::parse_mac_to_interface_macs($shmac);
+
+		foreach($intmacs as $int => $macs)
+		{
+			$this->output['interfaces'][$int]['macs'] = $macs;
+		}
 	}
 
 }
